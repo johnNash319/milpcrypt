@@ -1,0 +1,29 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "milpcrypt"
+version = "0.1.0"
+description = "MILP cryptanalysis toolkit: S-box differential paths and active S-box bounds"
+readme = "README.md"
+requires-python = ">=3.10"
+authors = [{ name = "Can Türesin" }]
+keywords = ["cryptanalysis", "MILP", "S-box", "differential", "block cipher"]
+dependencies = []
+
+[project.optional-dependencies]
+dev = ["pytest>=8"]
+milp = ["gurobipy>=12"]
+hull = ["scipy>=1.13"]
+
+[project.scripts]
+milpcrypt = "milpcrypt.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
+addopts = "-q"
