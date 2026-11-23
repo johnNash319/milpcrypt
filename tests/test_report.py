@@ -18,11 +18,16 @@ def test_report_format_and_counts(tmp_path):
 
     assert len(possible) == 97
     assert len(impossible) == 159
-    assert possible[0] == "0x0 -> 0x0  wt=0  count=16"
-    assert possible[1] == "0x1 -> 0x3  wt=3  count=4"
-    assert impossible[0] == "0x0 -> 0x1  wt=1  count=0"
-    assert all("count=0" in line for line in impossible)
-    assert all("wt=" in line and "count=" in line for line in possible)
+    assert possible[0] == "(0,0,0,0,0,0,0,0)"
+    assert possible[1] == "(0,0,0,1,0,0,1,1)"
+    assert impossible[0] == "(0,0,0,0,0,0,0,1)"
+    assert all(
+        len(line) == 17
+        and line.startswith("(")
+        and line.endswith(")")
+        and set(line[1:-1].split(",")) <= {"0", "1"}
+        for line in possible + impossible
+    )
 
 
 def test_report_can_skip_zero_path(tmp_path):
@@ -35,7 +40,7 @@ def test_report_can_skip_zero_path(tmp_path):
     possible, impossible = _read_sections(path)
 
     assert len(possible) == 96
-    assert possible[0] == "0x1 -> 0x3  wt=3  count=4"
+    assert possible[0] == "(0,0,0,1,0,0,1,1)"
     assert len(impossible) == 159
 
 
@@ -50,4 +55,7 @@ def test_sbox_method_writes_report(tmp_path):
 def test_differential_line_format():
     sbox = get_preset("present")
     line = format_differential_line(sbox.differential(1, 3))
-    assert line == "0x1 -> 0x3  wt=3  count=4"
+    assert line == "(0,0,0,1,0,0,1,1)"
+
+    inverse_line = format_differential_line(sbox.differential(0xA, 5))
+    assert inverse_line == "(1,0,1,0,0,1,0,1)"

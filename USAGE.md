@@ -1,7 +1,7 @@
 # milpcrypt — Usage Guide
 
 **Last updated:** 2026-11-23  
-**Version:** 0.2.0  
+**Version:** 0.3.0  
 **Repository:** <https://github.com/johnNash319/milpcrypt> (private)
 
 This guide explains how to install and use the `milpcrypt` toolkit. For the
@@ -346,21 +346,23 @@ The file has exactly this structure:
 ```text
 Possibles:
 
-0x0 -> 0x0  wt=0  count=16
-0x1 -> 0x3  wt=3  count=4
+(0,0,0,0,0,0,0,0)
+(0,0,0,1,0,0,1,1)
 ...
 
 Impossibles:
 
-0x0 -> 0x1  wt=1  count=0
-0x0 -> 0x2  wt=1  count=0
+(0,0,0,0,0,0,0,1)
+(0,0,0,0,0,0,1,0)
 ...
 ```
 
-Each line is `0xΔin -> 0xΔout  wt=<total Hamming weight>  count=<DDT entry>`.
-The default includes `(0,0)`, so the possible count matches the thesis's
-`2^n × 2^n` counting convention (97 for PRESENT). With `--skip-zero-path`,
-the possible section has 96 entries for PRESENT.
+Each line is a `2n`-bit vector: the first `n` bits are the input difference
+and the next `n` bits are the output difference. For a 4-bit S-box,
+`(0,0,0,1,0,0,1,1)` means `Δin = 0001` and `Δout = 0011` (the PRESENT path
+`1 -> 3`). The default includes `(0,0)`, so the possible count matches the
+thesis's `2^n × 2^n` counting convention (97 for PRESENT). With
+`--skip-zero-path`, the possible section has 96 entries for PRESENT.
 
 ---
 
@@ -453,14 +455,14 @@ python scripts\validate_thesis.py
 
 The script exits `1` on any failed check and is suitable for CI.
 
-### 4.7 Write the Possibles/Impossibles text report
+### 4.7 Write the bit-vector Possibles/Impossibles report
 
 ```powershell
 python -m milpcrypt report present --output results/present_differentials.txt
 ```
 
-This writes the human-readable report requested for inspecting the complete
-possible and impossible sets. To omit the trivial `(0,0)` path:
+This writes the bit-vector report for inspecting the complete possible and
+impossible sets. To omit the trivial `(0,0)` path:
 
 ```powershell
 python -m milpcrypt report present -o results/present_nonzero.txt --skip-zero-path
@@ -544,7 +546,7 @@ and `SBox.from_values` are convenience aliases.
 | `branch_number()` | S-box differential branch number |
 | `classify_impossible(threshold=None)` | Partition impossible paths into classes |
 | `summary()` | Aggregate `SBoxSummary` |
-| `write_differential_report(path, include_zero_path=True)` | Write the Possibles/Impossibles text report |
+| `write_differential_report(path, include_zero_path=True)` | Write the bit-vector Possibles/Impossibles report |
 
 Example:
 
@@ -723,34 +725,38 @@ Top-level shape:
 The `summary` object contains every `SBoxSummary` field, not just the
 abbreviated fields shown above.
 
-### 6.4 Possibles/Impossibles text report
+### 6.4 Bit-vector Possibles/Impossibles report
 
 `report` (and `write_differential_report`) writes a plain UTF-8 text file:
 
 ```text
 Possibles:
 
-0x0 -> 0x0  wt=0  count=16
-0x1 -> 0x3  wt=3  count=4
+(0,0,0,0,0,0,0,0)
+(0,0,0,1,0,0,1,1)
 ...
 
 Impossibles:
 
-0x0 -> 0x1  wt=1  count=0
-0x0 -> 0x2  wt=1  count=0
+(0,0,0,0,0,0,0,1)
+(0,0,0,0,0,0,1,0)
 ...
 ```
 
 Line format:
 
 ```text
-0x<Δin> -> 0x<Δout>  wt=<wt(Δin)+wt(Δout)>  count=<DDT count>
+(<Δin bits>,<Δout bits>)
 ```
 
-The number of hex digits per difference follows the S-box size (one digit
-for 4-bit S-boxes, two for 8-bit). The possible section includes `(0,0)` by
-default; use `include_zero_path=False` in Python or `--skip-zero-path` on
-the CLI to omit it.
+For an `n`-bit S-box, each line contains exactly `2n` bits. The first `n`
+bits are the input difference and the next `n` bits are the output
+difference. Example for a 4-bit S-box:
+`(0,0,0,1,0,0,1,1)` = `Δin = 0001`, `Δout = 0011`.
+
+The possible section includes `(0,0)` by default; use
+`include_zero_path=False` in Python or `--skip-zero-path` on the CLI to
+omit it.
 
 ---
 
@@ -957,7 +963,7 @@ Current milestone: **S-box differential extraction and thesis validation**.
 - [x] Arbitrary S-box input, DDT, possible/impossible paths
 - [x] Differential branch number and thesis impossible-path classification
 - [x] CSV/JSON export of all differential paths
-- [x] Text report of all possible and impossible differential paths
+- [x] Bit-vector text report of all possible and impossible differential paths
 - [x] Automated thesis-table and count validation
 - [ ] Convex hull of possible paths → inequality set `Hset`
 - [ ] Boura et al. extension (candidate inequalities from k-sums)
@@ -976,5 +982,6 @@ the new commands/API here, and add a change-log entry.
 
 | Date | Version | Change |
 | --- | --- | --- |
+| 2026-11-23 | 0.3.0 | Changed the report lines to `2n`-bit vectors (input bits followed by output bits) |
 | 2026-11-23 | 0.2.0 | Added `report` CLI command and `write_differential_report` API for the Possibles/Impossibles text file; test suite now 49 tests |
 | 2026-11-23 | 0.1.0 | Initial usage guide for S-box extraction, CLI, API, exports, and thesis validation |

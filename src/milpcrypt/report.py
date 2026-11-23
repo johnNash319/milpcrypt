@@ -170,12 +170,15 @@ def format_differentials(
 
 
 def format_differential_line(differential: Differential) -> str:
-    """One line of the human-readable Possibles/Impossibles report."""
-    return (
-        f"0x{differential.delta_in_hex} -> "
-        f"0x{differential.delta_out_hex}"
-        f"  wt={differential.weight}  count={differential.count}"
-    )
+    """One bit-vector line of the Possibles/Impossibles report.
+
+    The first ``n`` bits are the input difference and the next ``n`` bits
+    are the output difference, e.g. ``(0,0,0,1,0,0,1,1)`` for the 4-bit
+    path ``Δin = 0001`` and ``Δout = 0011``.
+    """
+    return "(" + ",".join(
+        differential.delta_in_bin + differential.delta_out_bin
+    ) + ")"
 
 
 def write_differential_report(
@@ -190,13 +193,16 @@ def write_differential_report(
 
         Possibles:
 
-        0x1 -> 0x3  wt=3  count=4
+        (0,0,0,1,0,0,1,1)
         ...
 
         Impossibles:
 
-        0x1 -> 0x0  wt=1  count=0
+        (0,0,1,0,0,0,0,0)
         ...
+
+    Each line is a ``2n``-bit vector: the first ``n`` bits encode the input
+    difference and the next ``n`` bits encode the output difference.
 
     ``include_zero_path`` controls whether the trivial ``(0,0)`` path is
     listed in the possible section (it is included by default, matching the
