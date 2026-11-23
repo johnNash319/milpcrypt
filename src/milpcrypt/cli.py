@@ -14,6 +14,7 @@ from .report import (
     format_differentials,
     format_summary,
     write_ddt_csv,
+    write_differential_report,
     write_differentials_csv,
     write_differentials_json,
 )
@@ -111,6 +112,25 @@ def build_parser() -> argparse.ArgumentParser:
         "--json", metavar="PATH", help="write matching paths to JSON"
     )
     diff.set_defaults(handler=_cmd_differentials)
+
+    report = subparsers.add_parser(
+        "report",
+        help="write a Possibles/Impossibles text report",
+    )
+    _add_sbox_argument(report)
+    report.add_argument(
+        "--output",
+        "-o",
+        required=True,
+        metavar="PATH",
+        help="text file to write",
+    )
+    report.add_argument(
+        "--skip-zero-path",
+        action="store_true",
+        help="omit the trivial (0,0) path from the possible section",
+    )
+    report.set_defaults(handler=_cmd_report)
 
     thesis = subparsers.add_parser(
         "thesis-check",
@@ -249,6 +269,26 @@ def _cmd_differentials(args: argparse.Namespace) -> int:
             limit=limit,
             classes=display_classes,
         )
+    )
+    return 0
+
+
+def _cmd_report(args: argparse.Namespace) -> int:
+    sbox = resolve_sbox(args.spec)
+    path = write_differential_report(
+        args.output,
+        sbox,
+        include_zero_path=not args.skip_zero_path,
+    )
+    summary = sbox.summary()
+    possible_count = (
+        summary.possible_nonzero
+        if args.skip_zero_path
+        else summary.possible
+    )
+    print(
+        f"Wrote {possible_count} possible and {summary.impossible} "
+        f"impossible differential paths for {sbox.name} to {path}"
     )
     return 0
 

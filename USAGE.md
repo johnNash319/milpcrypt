@@ -1,7 +1,7 @@
 # milpcrypt — Usage Guide
 
 **Last updated:** 2026-11-23  
-**Version:** 0.1.0  
+**Version:** 0.2.0  
 **Repository:** <https://github.com/johnNash319/milpcrypt> (private)
 
 This guide explains how to install and use the `milpcrypt` toolkit. For the
@@ -79,7 +79,7 @@ python -m milpcrypt info present
 python -m pytest
 ```
 
-The test suite currently has 43 tests and should pass on a clean checkout.
+The test suite currently has 49 tests and should pass on a clean checkout.
 
 ---
 
@@ -324,6 +324,44 @@ Table 3.2 inconsistency described in
 default command still exits `0`; use `--strict` in CI if failures should
 block. `scripts/validate_thesis.py` always exits `1` when a check fails.
 
+### 3.6 `report`
+
+Write a text file containing every possible differential path followed by
+every impossible path:
+
+```powershell
+python -m milpcrypt report present --output results/present_differentials.txt
+python -m milpcrypt report present -o results/present_nonzero.txt --skip-zero-path
+```
+
+Options:
+
+| Option | Meaning |
+| --- | --- |
+| `--output PATH`, `-o PATH` | Output text file (required) |
+| `--skip-zero-path` | Omit the trivial `(0,0)` path from the possible section |
+
+The file has exactly this structure:
+
+```text
+Possibles:
+
+0x0 -> 0x0  wt=0  count=16
+0x1 -> 0x3  wt=3  count=4
+...
+
+Impossibles:
+
+0x0 -> 0x1  wt=1  count=0
+0x0 -> 0x2  wt=1  count=0
+...
+```
+
+Each line is `0xΔin -> 0xΔout  wt=<total Hamming weight>  count=<DDT entry>`.
+The default includes `(0,0)`, so the possible count matches the thesis's
+`2^n × 2^n` counting convention (97 for PRESENT). With `--skip-zero-path`,
+the possible section has 96 entries for PRESENT.
+
 ---
 
 ## 4. Common workflows
@@ -415,6 +453,29 @@ python scripts\validate_thesis.py
 
 The script exits `1` on any failed check and is suitable for CI.
 
+### 4.7 Write the Possibles/Impossibles text report
+
+```powershell
+python -m milpcrypt report present --output results/present_differentials.txt
+```
+
+This writes the human-readable report requested for inspecting the complete
+possible and impossible sets. To omit the trivial `(0,0)` path:
+
+```powershell
+python -m milpcrypt report present -o results/present_nonzero.txt --skip-zero-path
+```
+
+The same operation is available from Python:
+
+```python
+from milpcrypt import get_preset, write_differential_report
+
+write_differential_report(
+    "results/present_differentials.txt", get_preset("present")
+)
+```
+
 ---
 
 ## 5. Python API
@@ -430,12 +491,14 @@ from milpcrypt import (
     get_preset,
     list_presets,
     resolve_sbox,
+    write_differential_report,
 )
 from milpcrypt.report import (
     format_summary,
     format_ddt,
     format_differentials,
     write_ddt_csv,
+    write_differential_report,
     write_differentials_csv,
     write_differentials_json,
 )
@@ -481,6 +544,7 @@ and `SBox.from_values` are convenience aliases.
 | `branch_number()` | S-box differential branch number |
 | `classify_impossible(threshold=None)` | Partition impossible paths into classes |
 | `summary()` | Aggregate `SBoxSummary` |
+| `write_differential_report(path, include_zero_path=True)` | Write the Possibles/Impossibles text report |
 
 Example:
 
@@ -541,6 +605,7 @@ The last four sum to `impossible`.
 from milpcrypt import get_preset, ImpossibleClass
 from milpcrypt.report import (
     write_ddt_csv,
+    write_differential_report,
     write_differentials_csv,
     write_differentials_json,
 )
@@ -550,6 +615,9 @@ classes = sbox.classify_impossible()
 other = classes[ImpossibleClass.OTHER]
 
 write_ddt_csv("results/present_ddt.csv", sbox)
+write_differential_report(
+    "results/present_differentials.txt", sbox
+)
 write_differentials_csv(
     "results/present_other.csv", sbox, other, classes
 )
@@ -559,6 +627,14 @@ write_differentials_json(
     other,
     classes,
     kind="impossible:other",
+)
+```
+
+You can also call the report writer as a method:
+
+```python
+sbox.write_differential_report(
+    "results/present_differentials.txt"
 )
 ```
 
@@ -646,6 +722,35 @@ Top-level shape:
 
 The `summary` object contains every `SBoxSummary` field, not just the
 abbreviated fields shown above.
+
+### 6.4 Possibles/Impossibles text report
+
+`report` (and `write_differential_report`) writes a plain UTF-8 text file:
+
+```text
+Possibles:
+
+0x0 -> 0x0  wt=0  count=16
+0x1 -> 0x3  wt=3  count=4
+...
+
+Impossibles:
+
+0x0 -> 0x1  wt=1  count=0
+0x0 -> 0x2  wt=1  count=0
+...
+```
+
+Line format:
+
+```text
+0x<Δin> -> 0x<Δout>  wt=<wt(Δin)+wt(Δout)>  count=<DDT count>
+```
+
+The number of hex digits per difference follows the S-box size (one digit
+for 4-bit S-boxes, two for 8-bit). The possible section includes `(0,0)` by
+default; use `include_zero_path=False` in Python or `--skip-zero-path` on
+the CLI to omit it.
 
 ---
 
@@ -787,7 +892,7 @@ Git Credential Manager/browser login is sufficient.
 python -m pytest
 ```
 
-Current suite: 43 tests.
+Current suite: 49 tests.
 
 ### Add a new S-box preset
 
@@ -852,6 +957,7 @@ Current milestone: **S-box differential extraction and thesis validation**.
 - [x] Arbitrary S-box input, DDT, possible/impossible paths
 - [x] Differential branch number and thesis impossible-path classification
 - [x] CSV/JSON export of all differential paths
+- [x] Text report of all possible and impossible differential paths
 - [x] Automated thesis-table and count validation
 - [ ] Convex hull of possible paths → inequality set `Hset`
 - [ ] Boura et al. extension (candidate inequalities from k-sums)
@@ -870,4 +976,5 @@ the new commands/API here, and add a change-log entry.
 
 | Date | Version | Change |
 | --- | --- | --- |
+| 2026-11-23 | 0.2.0 | Added `report` CLI command and `write_differential_report` API for the Possibles/Impossibles text file; test suite now 49 tests |
 | 2026-11-23 | 0.1.0 | Initial usage guide for S-box extraction, CLI, API, exports, and thesis validation |

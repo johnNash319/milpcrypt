@@ -11,6 +11,7 @@ reduction.
 from __future__ import annotations
 
 from .presets import PRESETS, get_preset, list_presets, resolve_sbox
+from .report import write_differential_report
 from .sbox import (
     Differential,
     ImpossibleClass,
@@ -18,7 +19,7 @@ from .sbox import (
     SBoxSummary,
 )
 
-__version__ = "0.1.0"
+__version__ = "0.2.0"
 
 __all__ = [
     "Differential",
@@ -29,4 +30,5 @@ __all__ = [
     "get_preset",
     "list_presets",
     "resolve_sbox",
+    "write_differential_report",
 ]

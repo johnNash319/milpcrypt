@@ -18,6 +18,7 @@ from __future__ import annotations
 import re
 from dataclasses import dataclass
 from enum import Enum
+from pathlib import Path
 from typing import Iterator, Sequence
 
 # Building a full DDT costs O(2^(2n)) operations.  Twelve bits is already
@@ -409,4 +410,17 @@ class SBox:
             nonzero_to_zero=len(classes[ImpossibleClass.NONZERO_TO_ZERO]),
             low_weight=len(classes[ImpossibleClass.LOW_WEIGHT]),
             other=len(classes[ImpossibleClass.OTHER]),
+        )
+
+    def write_differential_report(
+        self,
+        path: str | Path,
+        *,
+        include_zero_path: bool = True,
+    ) -> Path:
+        """Write a Possibles/Impossibles text report for this S-box."""
+        from .report import write_differential_report as _write_report
+
+        return _write_report(
+            path, self, include_zero_path=include_zero_path
         )

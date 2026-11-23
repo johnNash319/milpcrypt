@@ -169,6 +169,66 @@ def format_differentials(
     return "\n".join(lines)
 
 
+def format_differential_line(differential: Differential) -> str:
+    """One line of the human-readable Possibles/Impossibles report."""
+    return (
+        f"0x{differential.delta_in_hex} -> "
+        f"0x{differential.delta_out_hex}"
+        f"  wt={differential.weight}  count={differential.count}"
+    )
+
+
+def write_differential_report(
+    path: str | Path,
+    sbox: SBox,
+    *,
+    include_zero_path: bool = True,
+) -> Path:
+    """Write all possible and impossible paths in two labelled sections.
+
+    The output has the form::
+
+        Possibles:
+
+        0x1 -> 0x3  wt=3  count=4
+        ...
+
+        Impossibles:
+
+        0x1 -> 0x0  wt=1  count=0
+        ...
+
+    ``include_zero_path`` controls whether the trivial ``(0,0)`` path is
+    listed in the possible section (it is included by default, matching the
+    thesis's 2^n x 2^n counting convention).
+    """
+    path = Path(path).expanduser()
+    path.parent.mkdir(parents=True, exist_ok=True)
+
+    possible = sorted(
+        sbox.possible_differentials(include_zero_path=include_zero_path),
+        key=lambda differential: (
+            differential.delta_in,
+            differential.delta_out,
+        ),
+    )
+    impossible = sorted(
+        sbox.impossible_differentials(),
+        key=lambda differential: (
+            differential.delta_in,
+            differential.delta_out,
+        ),
+    )
+
+    lines = ["Possibles:", ""]
+    lines.extend(format_differential_line(d) for d in possible)
+    lines.extend(["", "Impossibles:", ""])
+    lines.extend(format_differential_line(d) for d in impossible)
+
+    path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    return path
+
+
 def write_ddt_csv(path: str | Path, sbox: SBox) -> Path:
     path = Path(path).expanduser()
     path.parent.mkdir(parents=True, exist_ok=True)

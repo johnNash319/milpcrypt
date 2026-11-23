@@ -78,6 +78,34 @@ def test_cli_rejects_class_for_possible(capsys):
     assert "--class" in capsys.readouterr().err
 
 
+def test_cli_report(tmp_path, capsys):
+    path = tmp_path / "present_report.txt"
+    assert main(["report", "present", "--output", str(path)]) == 0
+    output = capsys.readouterr().out
+    assert "97 possible" in output
+    assert "159 impossible" in output
+    text = path.read_text(encoding="utf-8")
+    assert text.startswith("Possibles:\n\n")
+    assert "\nImpossibles:\n\n" in text
+
+
+def test_cli_report_skip_zero(tmp_path, capsys):
+    path = tmp_path / "present_nonzero.txt"
+    assert (
+        main(
+            [
+                "report",
+                "present",
+                "-o",
+                str(path),
+                "--skip-zero-path",
+            ]
+        )
+        == 0
+    )
+    assert "96 possible" in capsys.readouterr().out
+
+
 def test_cli_thesis_check_exit_codes(capsys):
     assert main(["thesis-check"]) == 0
     assert "[FAIL]" in capsys.readouterr().out

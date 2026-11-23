@@ -30,6 +30,7 @@ python -m milpcrypt presets
 python -m milpcrypt info present
 python -m milpcrypt ddt present
 python -m milpcrypt differentials present --kind impossible --class other --limit 20
+python -m milpcrypt report present --output results\present_differentials.txt
 python -m milpcrypt thesis-check
 python -m pytest
 ```
@@ -47,6 +48,7 @@ python -m pytest
 | `differentials SPEC` | list possible/impossible paths; filter with `--kind`, `--class`, `--limit` |
 | `differentials ... --csv PATH` | export all matching paths as CSV |
 | `differentials ... --json PATH` | export all matching paths as JSON |
+| `report SPEC --output PATH` | write a `Possibles:` / `Impossibles:` text report (`--skip-zero-path` omits `(0,0)`) |
 | `thesis-check` | compare computed values with the thesis tables/text (`--strict` exits 1 on failure) |
 
 `SPEC` can be a preset name, a path to a text file, a hex nibble string
@@ -166,6 +168,7 @@ milpcrypt/
 - [x] Arbitrary S-box input, DDT, possible/impossible paths
 - [x] Differential branch number and thesis impossible-path classification
 - [x] CSV/JSON export of all differential paths
+- [x] Text report (`Possibles:` / `Impossibles:`) of all differential paths
 - [x] Automated thesis-table and count validation
 - [ ] Convex hull of possible paths → inequality set `Hset`
 - [ ] Boura et al. extension (candidate inequalities from k-sums)
