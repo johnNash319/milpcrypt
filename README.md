@@ -4,6 +4,8 @@ A small research toolkit for the thesis **“On Measuring Security Bounds of
 Some Ciphers Using Mixed Integer Linear Programming (MILP) Approach”**
 (Can Türesin, METU, September 2021).
 
+> **Full command and API reference:** [`USAGE.md`](USAGE.md)
+
 The end goal is a reproducible implementation of the thesis pipeline:
 
 1. extract the possible/impossible differential paths of an S-box,
@@ -143,6 +145,7 @@ finding**, not a solver error.
 ```text
 milpcrypt/
 ├── pyproject.toml
+├── USAGE.md
 ├── src/milpcrypt/
 │   ├── sbox.py       # DDT, possible/impossible paths, branch number, classes
 │   ├── presets.py    # PRESENT, PRINCE, PRINCE inverse, KLEIN S-boxes

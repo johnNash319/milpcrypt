@@ -189,24 +189,27 @@ def _cmd_differentials(args: argparse.Namespace) -> int:
         )
         display_classes = None
         label = "possible"
+        json_kind = "possible"
     elif args.kind == "impossible":
         if args.category:
             category = _CLASS_CHOICES[args.category]
             differentials = list(classes[category])
             label = f"impossible ({category.value})"
+            json_kind = f"impossible:{category.value}"
         else:
             differentials = list(sbox.impossible_differentials())
             label = "impossible"
+            json_kind = "impossible"
         display_classes = classes
     else:
         differentials = list(sbox.iter_all_differentials())
         display_classes = None
         label = "all"
+        json_kind = "all"
 
     differentials.sort(key=lambda d: (d.delta_in, d.delta_out))
 
     exports: list[str] = []
-    json_kind = label.replace(" ", ":")
     if args.csv:
         path = write_differentials_csv(
             args.csv,
