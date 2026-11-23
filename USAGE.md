@@ -2,7 +2,7 @@
 
 **Last updated:** 2026-11-23  
 **Version:** 0.3.0  
-**Repository:** <https://github.com/johnNash319/milpcrypt> (private)
+**Repository:** <https://github.com/johnNash319/milpcrypt> (public; only the owner can push to `main`)
 
 This guide explains how to install and use the `milpcrypt` toolkit. For the
 project overview, thesis context, and the PRESENT DDT validation finding, see
@@ -41,8 +41,8 @@ project overview, thesis context, and the PRESENT DDT validation finding, see
 
 ### Clone and install
 
-The repository is private. On a new device, Git will ask you to authenticate
-with the GitHub account that owns it:
+The repository is public, so anyone can clone it read-only. To push changes
+you must authenticate as the owner, `johnNash319`:
 
 ```powershell
 git clone https://github.com/johnNash319/milpcrypt.git
@@ -882,11 +882,12 @@ used by the future MILP reduction stage. The repository root contains
 python gbTest.py
 ```
 
-### Private-repository authentication on another device
+### Pushing to the public repository from another device
 
-GitHub will ask you to sign in when cloning the private repository. Use the
-same account that owns `johnNash319/milpcrypt`; a personal access token or
-Git Credential Manager/browser login is sufficient.
+Anyone can clone `johnNash319/milpcrypt` without authentication. Only the
+owner, `johnNash319`, can push to `main`; authenticate with that account
+using a personal access token or Git Credential Manager/browser login.
+`main` is protected against force-pushes and deletion.
 
 ---
 

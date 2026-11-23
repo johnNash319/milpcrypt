@@ -5,6 +5,9 @@ Some Ciphers Using Mixed Integer Linear Programming (MILP) Approach”**
 (Can Türesin, METU, September 2021).
 
 > **Full command and API reference:** [`USAGE.md`](USAGE.md)
+>
+> **Repository access:** public read-only; only `johnNash319` can push to
+> `main`. Force-pushes and branch deletion are disabled.
 
 The end goal is a reproducible implementation of the thesis pipeline:
 
